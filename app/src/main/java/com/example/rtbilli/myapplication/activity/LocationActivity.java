@@ -2,7 +2,11 @@ package com.example.rtbilli.myapplication.activity;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,6 +17,7 @@ import android.widget.CompoundButton;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.rtbilli.myapplication.R;
@@ -33,6 +38,11 @@ public class LocationActivity extends AppCompatActivity{
 
     private NumberPicker mMinutePicker;
     private NumberPicker mSecondPicker;
+
+    private LocationManager mLocationManager;
+    private LocationListener mLocationListener;
+    private static double currentLat = 0;
+    private static double currentLon = 0;
 
     private static WeakReference<LocationActivity> inst;
 
@@ -94,7 +104,6 @@ public class LocationActivity extends AppCompatActivity{
         super.onStart();
         inst = new WeakReference<>(this);
     }
-
 
 
     public void setAlarmText(String alarmText) {

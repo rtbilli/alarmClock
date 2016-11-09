@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string-array name="alarm_choice">
+        <item>One-Time</item>
+        <item>Recursive</item>
+    </string-array>
 </resources>
