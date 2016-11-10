@@ -6,11 +6,22 @@
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="80dp"
+        android:layout_height="48dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Set Location"
         android:id="@+id/alarm_text"
         android:allowUndo="false"
+        android:textColor="#007bff"
+        android:textSize="30dp"
+        android:textIsSelectable="false" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="80dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/alarm_location_text"
+        android:allowUndo="false"
+        android:text="Waiting for location..."
         android:textColor="#007bff"
         android:textSize="30dp"
         android:textIsSelectable="false" />
@@ -20,20 +31,21 @@
         android:layout_height="wrap_content"
         android:columnCount="2"
         android:rowCount="2"
-        android:id="@+id/alarm_picker">
+        android:id="@+id/alarm_picker"
+        android:padding="10dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Minutes"
+            android:text="Min"
             android:id="@+id/Hour_Loc" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Seconds"
+            android:text="Sec"
             android:id="@+id/Min_Loc" />
 
 
@@ -41,7 +53,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/numberPickerMin_Loc"
-            android:orientation="vertical" />
+            android:orientation="vertical"
+            android:layout_marginRight="20dp" />
 
         <NumberPicker
             android:layout_width="wrap_content"

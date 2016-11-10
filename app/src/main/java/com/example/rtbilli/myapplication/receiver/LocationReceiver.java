@@ -20,9 +20,16 @@ public class LocationReceiver extends WakefulBroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         //this will update the UI with message
-        LocationActivity inst = LocationActivity.instance();
-        inst.setAlarmText("Alarm! Wake up! Wake up!");
+        if (LocationActivity.instance() != null) {
 
+            LocationActivity inst = LocationActivity.instance();
+
+            if (inst != null) {
+                if (inst.getInitialLocation() != null && inst.getLastBestLocation() != null)
+                    inst.setAlarmText("Get Up And Walk!");
+                else
+                    inst.setAlarmText("Not enough info");
+            }
 //        Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
 //        if (alarmUri == null) {
 //            alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -30,10 +37,11 @@ public class LocationReceiver extends WakefulBroadcastReceiver {
 //        Ringtone ringtone = RingtoneManager.getRingtone(context, alarmUri);
 //        ringtone.play();
 
-        //this will send a notification message
-        ComponentName comp = new ComponentName(context.getPackageName(),
-                LocationAlarmService.class.getName());
-        startWakefulService(context, (intent.setComponent(comp)));
-        setResultCode(Activity.RESULT_OK);
+            //this will send a notification message
+            ComponentName comp = new ComponentName(context.getPackageName(),
+                    LocationAlarmService.class.getName());
+            startWakefulService(context, (intent.setComponent(comp)));
+            setResultCode(Activity.RESULT_OK);
+        }
     }
 }

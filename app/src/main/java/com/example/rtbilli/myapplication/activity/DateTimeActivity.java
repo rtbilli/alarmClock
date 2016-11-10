@@ -1,12 +1,17 @@
 package com.example.rtbilli.myapplication.activity;
 
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -15,6 +20,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.rtbilli.myapplication.R;
+import com.example.rtbilli.myapplication.view.IntegratedTimePicker;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -25,17 +31,19 @@ import java.util.TimeZone;
  * Created by bburton on 11/9/16.
  */
 
-public class DateTimeActivity extends AppCompatActivity {
+public class DateTimeActivity extends LocationBasedActivity {
 
     private LinearLayout mDateLayout;
     private LinearLayout mTimeLayout;
     private LinearLayout mLayoutRepeat;
 
     private DatePicker mDatePicker;
-    private TimePicker mTimePicker;
+    private IntegratedTimePicker mTimePicker;
 
     private Spinner mChoiceSpinner;
     private Spinner mTimeZoneSpinner;
+
+    private Button mButtonSetAlarm;
 
     private ToggleButton mToggleButtonSun;
     private ToggleButton mToggleButtonMon;
@@ -51,6 +59,12 @@ public class DateTimeActivity extends AppCompatActivity {
     private SimpleDateFormat sdf;
     private Date resultdate;
 
+    public static final String BROADCAST_ACTION = "Hello World";
+    private static final int TWO_MINUTES = 1000 * 60 * 2;
+
+    public LocationManager locationManager;
+    public Location previousBestLocation = null;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
 
@@ -62,7 +76,9 @@ public class DateTimeActivity extends AppCompatActivity {
         mLayoutRepeat = (LinearLayout)findViewById(R.id.layout_repeat);
 
         mDatePicker = (DatePicker)findViewById(R.id.date_datetime);
-        mTimePicker = (TimePicker)findViewById(R.id.time_datetime);
+        mTimePicker = (IntegratedTimePicker)findViewById(R.id.time_datetime);
+
+        mButtonSetAlarm = (Button)findViewById(R.id.button_set_dtalarm);
 
         mToggleButtonSun = (ToggleButton)findViewById(R.id.toggleSun);
         mToggleButtonMon = (ToggleButton)findViewById(R.id.toggleMon);
@@ -71,7 +87,7 @@ public class DateTimeActivity extends AppCompatActivity {
         mToggleButtonThu = (ToggleButton)findViewById(R.id.toggleThu);
         mToggleButtonFri = (ToggleButton)findViewById(R.id.toggleFri);
         mToggleButtonSat = (ToggleButton)findViewById(R.id.toggleSat);
-        
+
         mChoiceSpinner = (Spinner)findViewById(R.id.spinner_select);
         mTimeZoneSpinner = (Spinner)findViewById(R.id.spinner_timezone);
 
@@ -88,34 +104,56 @@ public class DateTimeActivity extends AppCompatActivity {
 
         sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm:ss");
 
+        mTimeLayout.setFocusable(true);
+        mTimeLayout.setFocusableInTouchMode(true);
+
+        mTimeLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                Log.e("TAG","OK");
+                view.getParent().getParent().requestDisallowInterceptTouchEvent(true);
+                return false;
+            }
+        });
+
+
+
         mTimeZoneAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, idArray);
 
         mTimeZoneAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mTimeZoneSpinner.setAdapter(mTimeZoneAdapter);
 
-        mChoiceSpinner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mChoiceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                mTimeLayout.setVisibility(View.VISIBLE);
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 switch (i)
                 {
                     case 0:
+                        mTimeLayout.setVisibility(View.VISIBLE);
                         mDateLayout.setVisibility(View.VISIBLE);
                         mLayoutRepeat.setVisibility(View.GONE);
                         break;
                     case 1:
+                        mTimeLayout.setVisibility(View.VISIBLE);
                         mDateLayout.setVisibility(View.GONE);
                         mLayoutRepeat.setVisibility(View.VISIBLE);
                         break;
                 }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
 
             }
         });
 
-        mTimeZoneSpinner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+        mChoiceSpinner.setFocusableInTouchMode(true);
+
+        mTimeZoneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 getGMTTime();
                 String selectedId = (String) (adapterView.getItemAtPosition(i));
 
@@ -137,9 +175,29 @@ public class DateTimeActivity extends AppCompatActivity {
 
                 milliseconds = 0;
             }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
         });
 
+        mButtonSetAlarm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(DateTimeActivity.this, "Alarm Set", Toast.LENGTH_SHORT).show();
+            }
+        });
 
+        setTimezone();
+        Toast.makeText(DateTimeActivity.this, TimeZone.getDefault().getID(), Toast.LENGTH_SHORT).show();
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        setTimezone();
     }
 
     // Convert Local Time into GMT time
@@ -162,5 +220,18 @@ public class DateTimeActivity extends AppCompatActivity {
         System.out.println(sdf.format(resultdate));
     }
 
-
+    private void setTimezone() {
+        for(int i = 0; i < mTimeZoneSpinner.getCount(); i++){
+            Log.e("TAG", mTimeZoneAdapter.getItem(i));
+            Log.e("TAG", TimeZone.getDefault().getID());
+            if(mTimeZoneAdapter.getItem(i).equals(TimeZone.getDefault().getID())){
+                Log.e("TAG", "SET SELECTION: " + i);
+                mTimeZoneSpinner.setSelection(i);
+                break;
+            }
+        }
+    }
 }
+
+
+
