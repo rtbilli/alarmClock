@@ -6,8 +6,11 @@ import android.app.PendingIntent;
 import android.content.Intent;
 
 import com.example.rtbilli.myapplication.activity.LocationActivity;
+import com.example.rtbilli.myapplication.model.Alarm;
 import com.example.rtbilli.myapplication.receiver.LocationReceiver;
 import com.example.rtbilli.myapplication.service.LocationAlarmService;
+
+import java.util.ArrayList;
 
 /**
  * Created by bburton on 11/9/16.
@@ -16,9 +19,8 @@ import com.example.rtbilli.myapplication.service.LocationAlarmService;
 public class AlarmApplication extends Application {
 
     LocationAlarmService ls;
-    private PendingIntent pendingIntent;
 
-
+    private static ArrayList<Alarm> mAlarms;
 
     @Override
     public void onCreate() {
@@ -27,10 +29,12 @@ public class AlarmApplication extends Application {
 
         ls = new LocationAlarmService();
 
+        mAlarms = new ArrayList<>();
     }
 
-
-
+    public static void addAlarm(Alarm s) {
+        mAlarms.add(s);
+    }
 
 
 }

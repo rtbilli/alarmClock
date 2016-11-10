@@ -107,7 +107,10 @@ public class LocationActivity extends LocationBasedActivity {
                         }
 
                         public void onFinish() {
-                            setAlarmText("Get Up And Walk!");
+                            if (lastBestLocation != null && initialBestLocation != null) {
+                                if (lastBestLocation.distanceTo(initialBestLocation) > 3)
+                                    setAlarmText("Get Up And Walk!");
+                            }
                         }
                     }.start();
 
